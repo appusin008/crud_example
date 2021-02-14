@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous" />
+    <script <script src="http://login2explore.com/jpdb/resources/js/0.0.3/jpdb-commons.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <title>Crud Example</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html" style="color: cyan"><strong>Crud Example</strong>
+        </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="index.html">Add Employee</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="fetch.html">Fetch Employies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="update.html">Update Employies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="remove.html">Delete Employies</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="margin-top: 20px">
+        <form method="POST">
+            <select id="column" class="form-select" aria-label="Default select example" style="width: 250px; float: left;">
+                <option selected>Search By Column</option>
+                <option value="empName">Name</option>
+                <option value="empId">ID</option>
+                <option value="empEmail">Email</option>
+                <option value="empContact">Contact</option>
+            </select>
+            <input type="text" class="form-control" name="searchBy" id="searchBy" style="width: 470px; float: left; margin-left: 10px;" placeholder="Enter Value" />
+            <input type="button" onclick="getValue()" class="btn btn-outline-primary" id="search" value="Search" style="width: 150px; float: left; margin-left: 10px;">
+            <input type="button" onclick="getAll()" class="btn btn-outline-success" id="searchall" value="Search All Data" style="width: 200px; float: left; margin-left: 20px;">
+        </form>
+    </div>
+    <script>
+        function getData() {
+            var Column = $("#column").val();
+            if (Column == "Search By Column") {
+                alert("Select Column Name");
+                $("#column").focus();
+                return "";
+            }
+            var name = $("#searchBy").val();
+            if (name == "") {
+                alert("Value is Required");
+                $("#searchBy").focus();
+                return "";
+            }
+            var jsonStrObj = new Object();
+            if (Column == "empId") {
+                jsonStrObj.empId = name;
+            } else if (Column == "empName") {
+                jsonStrObj.empName = name;
+            } else if (Column == "empEmail") {
+                jsonStrObj.empEmail = name;
+            } else if (Column == "empContact") {
+                jsonStrObj.empContact = name;
+            }
+            return jsonStrObj;
+        }
+
+        function createGETRequest(token, dbname, relationName, jsonObjStr) {
+            var value1 = "{\n" +
+                "\"token\" : \"" +
+                token +
+                "\",\n" + "\"cmd\" : \"GET\",\n" +
+                "\"dbName\": \"" +
+                dbname +
+                "\",\n" +
+                "\"rel\" : \"" +
+                relationName +
+                "\",\n" +
+                "\"jsonStr\":\n" +
+                jsonObjStr +
+                "\n" +
+                "}";
+            return value1;
+        }
+
+        function executeCommand(reqString, dbBaseUrl, apiEndPointUrl) {
+            var url = dbBaseUrl + apiEndPointUrl;
+            var jsonObj;
+            $.post(url, reqString, function(result) {
+                jsonObj = JSON.parse(result);
+            }).fail(function(result) {
+                var dataJsonObj = result.responseText;
+                jsonObj = JSON.parse(dataJsonObj);
+            });
+            return jsonObj;
+        }
+
+        function resetForm() {
+            $("#column").val("Search By Column");
+            $("#searchBy").val("");
+        }
+
+        function getValue() {
+            var jsonStr = getData();
+            if (jsonStr == "") {
+                return;
+            }
+            var getRequest = createGETRequest(
+                "90935401|-31948797852772494|90931799",
+                "Employee",
+                "emp_data",
+                jsonStr
+            );
+            alert(getRequest);
+            jQuery.ajaxSetup({
+                async: false,
+            });
+            var resultObj = executeCommand(
+                getRequest,
+                "http://api.login2explore.com:5577",
+                "/api/irl"
+            );
+            alert(JSON.stringify(resultObj));
+            jQuery.ajaxSetup({
+                async: true,
+            });
+            resetForm();
+        }
+
+        function createGETALLRecordRequest(token, dbName, relName, pageNo, pageSize, createTime, updateTime) {
+            if (createTime !== undefined) {
+                if (createTime !== true) {
+                    createTime = false;
+                }
+            } else {
+                createTime = false;
+            }
+            if (updateTime !== undefined) {
+                if (updateTime !== true) {
+                    updateTime = false;
+                }
+            } else {
+                updateTime = false;
+            }
+            var req = "{\n" +
+                "\"token\" : \"" +
+                token +
+                "\"," +
+                "\"dbName\": \"" +
+                dbName +
+                "\",\n" + "\"cmd\" : \"GETALL\",\n" +
+                "\"rel\" : \"" +
+                relName +
+                "\",\n" + "\"pageNo\":" +
+                pageNo +
+                "," + "\"pageSize\":" +
+                pageSize +
+                "\," +
+                "\"createTime\":" +
+                createTime +
+                "\," +
+                "\"updateTime\":" +
+                updateTime +
+                "\n" +
+                "}";
+            return req;
+        }
+
+        function getAll() {
+            var getRequest = createGETALLRecordRequest(
+                "90935401|-31948797852772494|90931799",
+                "Employee",
+                "emp_data",
+                1,
+                100,
+                true,
+                true
+            );
+            alert(getRequest);
+            jQuery.ajaxSetup({
+                async: false,
+            });
+            var resultObj = executeCommand(
+                getRequest,
+                "http://api.login2explore.com:5577",
+                "/api/irl"
+            );
+            alert(JSON.stringify(resultObj));
+            jQuery.ajaxSetup({
+                async: true,
+            });
+            resetForm();
+        }
+    </script>
+</body>
+
+</html>
